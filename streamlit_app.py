@@ -25,14 +25,13 @@ def translate_text(text, lang_from, lang_to, secret_key):
 
 
 # Título de la aplicación
-st.title("AITranslate")
+st.title("AI Correct")
 
 # Agregar título y texto en la parte superior
 st.markdown("## La mejor corrección automática del mundo")
-st.markdown("Las redes neuronales de AITranslate son capaces de captar hasta los más mínimos matices y reproducirlos en la corrección a diferencia de cualquier otro servicio. Para evaluar la calidad de nuestros modelos de traducción automática, realizamos regularmente pruebas a ciegas. En las pruebas a ciegas, los traductores profesionales seleccionan la traducción más precisa sin saber qué empresa la produjo. AITranslate supera a la competencia por un factor de 3:1.")
 
 # Campo de entrada para la clave API
-secret_key = st.text_input("Ingrese su clave API de AICorrect", type="password")
+secret_key = st.text_input("Ingrese su clave API de AI Correct", type="password")
 
 # Explicación sobre cómo obtener la clave API
 st.markdown("Para obtener la clave API de AICorrect, por favor envíe un correo electrónico a info@editorialarje.com.")
@@ -66,7 +65,7 @@ if st.button("Corregir"):
                     docx_buffer_en.seek(0)
 
                     # Descargar el archivo DOCX traducido al español
-                    st.download_button("Descargar traducción al español", data=docx_buffer_en, file_name="correccion_espanol.docx")
+                    st.download_button("Descargar corrección", data=docx_buffer_en, file_name="correccion_espanol.docx")
 
                     st.success("La corrección se ha guardado en el archivo 'correccion_espanol.docx'")
                     st.info(f"Caracteres disponibles: {available_chars}")
@@ -75,4 +74,4 @@ if st.button("Corregir"):
             except Exception as e:
                 st.error(f"Error al leer el archivo DOCX: {e}")
     else:
-        st.error("Por favor, ingrese su clave API de AICorrect y cargue un archivo DOCX en español.")
+        st.error("Por favor, ingrese su clave API de AI Correct y cargue un archivo DOCX en español.")
