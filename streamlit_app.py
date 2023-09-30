@@ -7,18 +7,18 @@ import os
 # Cambiar el título en la pestaña del navegador
 st.set_page_config(page_title="AICorrect", layout="centered")
 
-# Función para traducir texto utilizando la API de DeepL
-def translate_text(text, lang_from, lang_to):
+# Función para corregir texto utilizando la API de DeepL
+def correct_text(text, lang_from, lang_to):
     url = "https://api-free.deepl.com/v2/translate"
     params = {
-        "auth_key": "bf24d7da-c037-e26e-ea0a-becd1e742d97:fx",
+        "auth_key": "TU_CLAVE_DE_API_DEEPL",
         "text": text,
         "source_lang": lang_from,
         "target_lang": lang_to
     }
     response = requests.post(url, data=params)
-    translation = response.json()["translations"][0]["text"]
-    return translation
+    correction = response.json()["translations"][0]["text"]
+    return correction
 
 # Título de la aplicación
 st.title("AI Correct")
@@ -29,8 +29,8 @@ st.markdown("## La mejor corrección automática del mundo")
 # Cargar archivo DOCX en español
 uploaded_file = st.file_uploader("Cargar archivo DOCX en español", type=["docx"])
 
-# Botón para traducir
-if st.button("Traducir"):
+# Botón para corregir
+if st.button("Corregir"):
     if uploaded_file is not None:
         # Verificar si el archivo cargado es un archivo DOCX válido
         if os.path.splitext(uploaded_file.name)[1] != ".docx":
@@ -42,39 +42,26 @@ if st.button("Traducir"):
                 docx = Document(file_stream)
                 text_es = "\n".join([paragraph.text for paragraph in docx.paragraphs])
 
-                # Traducir el texto al inglés utilizando la API de DeepL
-                translation_en = translate_text(text_es, "ES", "EN")
+                # Verificar si el texto excede el límite de 500.000 caracteres
+                if len(text_es) > 500000:
+                    st.error("El texto excede el límite de 500.000 caracteres.")
+                else:
+                    # Corregir el texto en español utilizando la API de DeepL
+                    correction_es = correct_text(text_es, "ES", "ES")
 
-                # Crear un nuevo documento DOCX con la traducción al inglés
-                translated_docx_en = Document()
-                translated_docx_en.add_paragraph(translation_en)
+                    # Crear un nuevo documento DOCX con la corrección en español
+                    corrected_docx_es = Document()
+                    corrected_docx_es.add_paragraph(correction_es)
 
-                # Guardar el documento DOCX en un objeto BytesIO
-                docx_buffer_en = BytesIO()
-                translated_docx_en.save(docx_buffer_en)
-                docx_buffer_en.seek(0)
+                    # Guardar el documento DOCX en un objeto BytesIO
+                    docx_buffer_es = BytesIO()
+                    corrected_docx_es.save(docx_buffer_es)
+                    docx_buffer_es.seek(0)
 
-                # Descargar el archivo DOCX traducido al inglés
-                st.download_button("Descargar traducción al inglés", data=docx_buffer_en, file_name="traduccion_ingles.docx")
+                    # Descargar el archivo DOCX corregido en español
+                    st.download_button("Descargar corrección en español", data=docx_buffer_es, file_name="correccion_espanol.docx")
 
-                st.success("La traducción al inglés se ha guardado en el archivo 'traduccion_ingles.docx'")
-
-                # Traducir el texto en inglés al español utilizando la API de DeepL
-                translation_es = translate_text(translation_en, "EN", "ES")
-
-                # Crear un nuevo documento DOCX con la traducción al español
-                translated_docx_es = Document()
-                translated_docx_es.add_paragraph(translation_es)
-
-                # Guardar el documento DOCX en un objeto BytesIO
-                docx_buffer_es = BytesIO()
-                translated_docx_es.save(docx_buffer_es)
-                docx_buffer_es.seek(0)
-
-                # Descargar el archivo DOCX traducido al español
-                st.download_button("Descargar traducción al español", data=docx_buffer_es, file_name="traduccion_espanol.docx")
-
-                st.success("La traducción al español se ha guardado en el archivo 'traduccion_espanol.docx'")
+                    st.success("La corrección en español se ha guardado en el archivo 'correccion_espanol.docx'")
             except Exception as e:
                 st.error(f"Error al leer el archivo DOCX: {e}")
     else:
