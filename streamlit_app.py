@@ -1,8 +1,6 @@
 import streamlit as st
 import requests
 from docx import Document
-from io import BytesIO
-from python_docx_diff import compare, insertions, deletions
 
 # Cambiar el título en la pestaña del navegador
 st.set_page_config(page_title="AITranslate", layout="centered")
@@ -22,17 +20,6 @@ def translate_text(text, lang_from, lang_to, secret_key):
         return result, available_chars
     else:
         return None, None
-
-# Función para generar el documento con control de cambios
-def generate_diff_document(original_doc, translated_doc):
-    diff_doc = Document()
-    changes = compare(original_doc, translated_doc)
-    for change in changes:
-        if isinstance(change, insertions.Insertion):
-            diff_doc.add_paragraph(change.text, style='Inserted Text')
-        elif isinstance(change, deletions.Deletion):
-            diff_doc.add_paragraph(change.text, style='Deleted Text')
-    return diff_doc
 
 # Título de la aplicación
 st.title("AITranslate")
@@ -73,18 +60,15 @@ if st.button("Traducir"):
                 docx_es_translated = Document()
                 docx_es_translated.add_paragraph(translation_es)
 
-                # Generar el documento con control de cambios
-                diff_doc = generate_diff_document(docx_es, docx_es_translated)
-
-                # Guardar el documento con control de cambios en un objeto BytesIO
+                # Guardar el documento traducido al español en un objeto BytesIO
                 docx_buffer = BytesIO()
-                diff_doc.save(docx_buffer)
+                docx_es_translated.save(docx_buffer)
                 docx_buffer.seek(0)
 
-                # Descargar el archivo DOCX con control de cambios
-                st.download_button("Descargar documento con control de cambios", data=docx_buffer, file_name="control_de_cambios.docx")
+                # Descargar el archivo DOCX traducido al español
+                st.download_button("Descargar documento traducido al español", data=docx_buffer, file_name="documento_traducido.docx")
 
-                st.success("El documento con control de cambios se ha guardado en el archivo 'control_de_cambios.docx'")
+                st.success("El documento traducido al español se ha guardado en el archivo 'documento_traducido.docx'")
             else:
                 st.error("Error al traducir el documento del inglés al español. Verifique su clave API o intente nuevamente.")
         else:
