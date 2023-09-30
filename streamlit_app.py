@@ -33,7 +33,6 @@ if st.button("Corregir"):
                     engine="text-davinci-003",
                     prompt=chunk,
                     max_tokens=100,
-                    temperature=0.7,
                     n=1,
                     stop=None,
                     temperature=0.7
