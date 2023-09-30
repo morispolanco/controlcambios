@@ -7,7 +7,7 @@ import os
 # Cambiar el título en la pestaña del navegador
 st.set_page_config(page_title="AICorrect", layout="centered")
 
-# URL base de la API de AI Translate
+# URL base de la API de AI Correct
 BASE_URL = "https://ai-translate.pro/api"
 
 # Función para traducir texto
@@ -34,12 +34,12 @@ st.markdown("## La mejor corrección automática del mundo")
 secret_key = st.text_input("Ingrese su clave API de AI Correct", type="password")
 
 # Explicación sobre cómo obtener la clave API
-st.markdown("Para obtener la clave API de AICorrect, por favor envíe un correo electrónico a info@editorialarje.com.")
+st.markdown("Para obtener la clave API de AI Correct, por favor envíe un correo electrónico a info@editorialarje.com.")
 
-# Cargar archivo DOCX en español
-uploaded_file = st.file_uploader("Cargar archivo DOCX en español", type=["docx"])
+# Cargar archivo DOCX en inglés
+uploaded_file = st.file_uploader("Cargar archivo DOCX en inglés", type=["docx"])
 
-# Botón para traducir
+# Botón para corregir
 if st.button("Corregir"):
     if secret_key and uploaded_file is not None:
         # Verificar si el archivo cargado es un archivo DOCX válido
@@ -50,28 +50,28 @@ if st.button("Corregir"):
                 # Abrir el archivo en modo de lectura
                 file_stream = BytesIO(uploaded_file.read())
                 docx = Document(file_stream)
-                text_es = "\n".join([paragraph.text for paragraph in docx.paragraphs])
+                text_en = "\n".join([paragraph.text for paragraph in docx.paragraphs])
 
-                # Traducir el texto al inglés
-                translation_en, available_chars = translate_text(text_es, "es", "en", secret_key)
-                if translation_en:
-                    # Crear un nuevo documento DOCX con la traducción al inglés
-                    translated_docx_en = Document()
-                    translated_docx_en.add_paragraph(translation_en)
+                # Traducir el texto al español
+                translation_es, available_chars = translate_text(text_en, "en", "es", secret_key)
+                if translation_es:
+                    # Crear un nuevo documento DOCX con la traducción al español
+                    translated_docx_es = Document()
+                    translated_docx_es.add_paragraph(translation_es)
 
                     # Guardar el documento DOCX en un objeto BytesIO
-                    docx_buffer_en = BytesIO()
-                    translated_docx_en.save(docx_buffer_en)
-                    docx_buffer_en.seek(0)
+                    docx_buffer_es = BytesIO()
+                    translated_docx_es.save(docx_buffer_es)
+                    docx_buffer_es.seek(0)
 
                     # Descargar el archivo DOCX traducido al español
-                    st.download_button("Descargar corrección", data=docx_buffer_en, file_name="correccion_espanol.docx")
+                    st.download_button("Descargar corrección", data=docx_buffer_es, file_name="correccion_espanol.docx")
 
                     st.success("La corrección se ha guardado en el archivo 'correccion_espanol.docx'")
                     st.info(f"Caracteres disponibles: {available_chars}")
                 else:
-                    st.error("Error al coregir el texto. Verifique su clave API o intente nuevamente.")
+                    st.error("Error al corregir el texto. Verifique su clave API o intente nuevamente.")
             except Exception as e:
                 st.error(f"Error al leer el archivo DOCX: {e}")
     else:
-        st.error("Por favor, ingrese su clave API de AI Correct y cargue un archivo DOCX en español.")
+        st.error("Por favor, ingrese su clave API de AI Correct y cargue un archivo DOCX en inglés.")
