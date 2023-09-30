@@ -1,7 +1,6 @@
 import streamlit as st
 import docx2txt
 import openai
-from docx import Document
 
 # Título de la aplicación
 st.title("Corrector de Textos en Español con ChatGPT")
@@ -34,9 +33,9 @@ if st.button("Corregir"):
                     engine="text-davinci-003",
                     prompt=chunk,
                     max_tokens=100,
+                    temperature=0.7,
                     n=1,
-                    stop=None,
-                    temperature=0.7
+                    stop=None
                 )
                 
                 # Obtener la respuesta generada por ChatGPT
@@ -46,16 +45,13 @@ if st.button("Corregir"):
             # Unir los chunks corregidos en un solo texto
             corrected_text = " ".join(corrected_chunks)
             
-            # Crear un nuevo documento .docx con el texto corregido
-            corrected_document = Document()
-            corrected_document.add_paragraph(corrected_text)
+            # Guardar el texto corregido en un archivo de texto (.txt)
+            temp_file = "corregido.txt"
+            with open(temp_file, "w", encoding="utf-8") as file:
+                file.write(corrected_text)
             
-            # Guardar el documento .docx en un archivo temporal
-            temp_file = "corregido.docx"
-            corrected_document.save(temp_file)
-            
-            # Descargar el archivo .docx
-            st.download_button("Descargar documento corregido", data=temp_file, file_name="corregido.docx")
+            # Descargar el archivo de texto (.txt)
+            st.download_button("Descargar documento corregido", data=temp_file, file_name="corregido.txt")
         else:
             st.warning("Por favor, carga un documento antes de corregir.")
     else:
