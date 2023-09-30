@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 from docx import Document
+from io import BytesIO
+import os
 
 # Cambiar el título en la pestaña del navegador
 st.set_page_config(page_title="AITranslate", layout="centered")
@@ -21,6 +23,7 @@ def translate_text(text, lang_from, lang_to, secret_key):
     else:
         return None, None
 
+
 # Título de la aplicación
 st.title("AITranslate")
 
@@ -40,38 +43,51 @@ uploaded_file = st.file_uploader("Cargar archivo DOCX en español", type=["docx"
 # Botón para traducir
 if st.button("Traducir"):
     if secret_key and uploaded_file is not None:
-        # Leer el contenido del archivo DOCX en español
-        docx_es = Document(uploaded_file)
-        text_es = "\n".join([paragraph.text for paragraph in docx_es.paragraphs])
-
-        # Traducir el texto al inglés
-        translation_en, _ = translate_text(text_es, "es", "en", secret_key)
-
-        if translation_en:
-            # Crear un nuevo documento DOCX con la traducción al inglés
-            docx_en = Document()
-            docx_en.add_paragraph(translation_en)
-
-            # Traducir el documento en inglés de nuevo al español
-            translation_es, _ = translate_text(translation_en, "en", "es", secret_key)
-
-            if translation_es:
-                # Crear un nuevo documento DOCX con la traducción al español
-                docx_es_translated = Document()
-                docx_es_translated.add_paragraph(translation_es)
-
-                # Guardar el documento traducido al español en un objeto BytesIO
-                docx_buffer = BytesIO()
-                docx_es_translated.save(docx_buffer)
-                docx_buffer.seek(0)
-
-                # Descargar el archivo DOCX traducido al español
-                st.download_button("Descargar documento traducido al español", data=docx_buffer, file_name="documento_traducido.docx")
-
-                st.success("El documento traducido al español se ha guardado en el archivo 'documento_traducido.docx'")
-            else:
-                st.error("Error al traducir el documento del inglés al español. Verifique su clave API o intente nuevamente.")
+        # Verificar si el archivo cargado es un archivo DOCX válido
+        if os.path.splitext(uploaded_file.name)[1] != ".docx":
+            st.error("Por favor, cargue un archivo DOCX válido.")
         else:
-            st.error("Error al traducir el documento del español al inglés. Verifique su clave API o intente nuevamente.")
+            # Leer el contenido del archivo DOCX
+            docx = Document(uploaded_file.read())
+            text_es = "\n".join([paragraph.text for paragraph in docx.paragraphs])
+
+            # Traducir el texto al inglés
+            translation_en, available_chars = translate_text(text_es, "es", "en", secret_key)
+            if translation_en:
+                # Crear un nuevo documento DOCX con la traducción al inglés
+                translated_docx_en = Document()
+                translated_docx_en.add_paragraph(translation_en)
+
+                # Guardar el documento DOCX en un objeto BytesIO
+                docx_buffer_en = BytesIO()
+                translated_docx_en.save(docx_buffer_en)
+                docx_buffer_en.seek(0)
+
+                # Descargar el archivo DOCX traducido al inglés
+                st.download_button("Descargar traducción al inglés", data=docx_buffer_en, file_name="traduccion_ingles.docx")
+
+                st.success("La traducción al inglés se ha guardado en el archivo 'traduccion_ingles.docx'")
+                st.info(f"Caracteres disponibles: {available_chars}")
+
+                # Traducir el texto en inglés de nuevo al español
+                translation_es, _ = translate_text(translation_en, "en", "es", secret_key)
+                if translation_es:
+                    # Crear un nuevo documento DOCX con la traducción al español
+                    translated_docx_es = Document()
+                    translated_docx_es.add_paragraph(translation_es)
+
+                    # Guardar el documento DOCX en un objeto BytesIO
+                    docx_buffer_es = BytesIO()
+                    translated_docx_es.save(docx_buffer_es)
+                    docx_buffer_es.seek(0)
+
+                    # Descargar el archivo DOCX traducido al español
+                    st.download_button("Descargar traducción al español", data=docx_buffer_es, file_name="traduccion_espanol.docx")
+
+                    st.success("La traducción al español se ha guardado en el archivo 'traduccion_espanol.docx'")
+                else:
+                    st.error("Error al traducir el texto al español. Verifique su clave API o intente nuevamente.")
+            else:
+                st.error("Error al traducir el texto al inglés. Verifique su clave API o intente nuevamente.")
     else:
         st.error("Por favor, ingrese su clave API de AI Translate y cargue un archivo DOCX en español.")
