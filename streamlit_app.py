@@ -65,30 +65,11 @@ if st.button("Traducir"):
                     translated_docx_en.save(docx_buffer_en)
                     docx_buffer_en.seek(0)
 
-                    # Descargar el archivo DOCX traducido al inglés
-                    st.download_button("Descargar traducción al inglés", data=docx_buffer_en, file_name="traduccion_ingles.docx")
+                    # Descargar el archivo DOCX traducido al español
+                    st.download_button("Descargar traducción al español", data=docx_buffer_en, file_name="traduccion_espanol.docx")
 
-                    st.success("La traducción al inglés se ha guardado en el archivo 'traduccion_ingles.docx'")
+                    st.success("La traducción al español se ha guardado en el archivo 'traduccion_espanol.docx'")
                     st.info(f"Caracteres disponibles: {available_chars}")
-
-                    # Traducir el texto en inglés de nuevo al español
-                    translation_es, _ = translate_text(translation_en, "en", "es", secret_key)
-                    if translation_es:
-                        # Crear un nuevo documento DOCX con la traducción al español
-                        translated_docx_es = Document()
-                        translated_docx_es.add_paragraph(translation_es)
-
-                        # Guardar el documento DOCX en un objeto BytesIO
-                        docx_buffer_es = BytesIO()
-                        translated_docx_es.save(docx_buffer_es)
-                        docx_buffer_es.seek(0)
-
-                        # Descargar el archivo DOCX traducido al español
-                        st.download_button("Descargar traducción al español", data=docx_buffer_es, file_name="traduccion_espanol.docx")
-
-                        st.success("La traducción al español se ha guardado en el archivo 'traduccion_espanol.docx'")
-                    else:
-                        st.error("Error al traducir el texto al español. Verifique su clave API o intente nuevamente.")
                 else:
                     st.error("Error al traducir el texto al inglés. Verifique su clave API o intente nuevamente.")
             except Exception as e:
