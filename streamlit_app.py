@@ -11,7 +11,7 @@ st.set_page_config(page_title="AICorrect", layout="centered")
 def correct_text(text, lang_from, lang_to):
     url = "https://api-free.deepl.com/v2/translate"
     params = {
-        "auth_key": "TU_CLAVE_DE_API_DEEPL",
+        "auth_key": "bf24d7da-c037-e26e-ea0a-becd1e742d97:fx",
         "text": text,
         "source_lang": lang_from,
         "target_lang": lang_to
