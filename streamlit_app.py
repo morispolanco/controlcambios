@@ -48,8 +48,9 @@ if st.button("Traducir"):
             st.error("Por favor, cargue un archivo DOCX válido.")
         else:
             try:
-                # Leer el contenido del archivo DOCX
-                docx = Document(uploaded_file.read())
+                # Abrir el archivo en modo de lectura
+                file_stream = BytesIO(uploaded_file.read())
+                docx = Document(file_stream)
                 text_es = "\n".join([paragraph.text for paragraph in docx.paragraphs])
 
                 # Traducir el texto al inglés
