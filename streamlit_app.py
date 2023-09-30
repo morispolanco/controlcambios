@@ -76,4 +76,3 @@ if st.button("Traducir"):
                 st.error(f"Error al leer el archivo DOCX: {e}")
     else:
         st.error("Por favor, ingrese su clave API de AI Translate y cargue un archivo DOCX en español.")
-C
