@@ -3,16 +3,22 @@ import requests
 from docx import Document
 from io import BytesIO
 import os
-import googletrans
 
 # Cambiar el título en la pestaña del navegador
 st.set_page_config(page_title="AICorrect", layout="centered")
 
-# Función para traducir texto utilizando la API de Google Translate
+# Función para traducir texto utilizando la API de DeepL
 def translate_text(text, lang_from, lang_to):
-    translator = googletrans.Translator()
-    translation = translator.translate(text, src=lang_from, dest=lang_to)
-    return translation.text
+    url = "https://api-free.deepl.com/v2/translate"
+    params = {
+        "auth_key": "bf24d7da-c037-e26e-ea0a-becd1e742d97:fx",
+        "text": text,
+        "source_lang": lang_from,
+        "target_lang": lang_to
+    }
+    response = requests.post(url, data=params)
+    translation = response.json()["translations"][0]["text"]
+    return translation
 
 # Título de la aplicación
 st.title("AI Correct")
@@ -36,8 +42,8 @@ if st.button("Traducir"):
                 docx = Document(file_stream)
                 text_es = "\n".join([paragraph.text for paragraph in docx.paragraphs])
 
-                # Traducir el texto al inglés utilizando la API de Google Translate
-                translation_en = translate_text(text_es, "es", "en")
+                # Traducir el texto al inglés utilizando la API de DeepL
+                translation_en = translate_text(text_es, "ES", "EN")
 
                 # Crear un nuevo documento DOCX con la traducción al inglés
                 translated_docx_en = Document()
@@ -53,8 +59,8 @@ if st.button("Traducir"):
 
                 st.success("La traducción al inglés se ha guardado en el archivo 'traduccion_ingles.docx'")
 
-                # Traducir el texto en inglés al español utilizando la API de Google Translate
-                translation_es = translate_text(translation_en, "en", "es")
+                # Traducir el texto en inglés al español utilizando la API de DeepL
+                translation_es = translate_text(translation_en, "EN", "ES")
 
                 # Crear un nuevo documento DOCX con la traducción al español
                 translated_docx_es = Document()
