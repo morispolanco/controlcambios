@@ -1,37 +1,29 @@
 import streamlit as st
-import spacy
-import tempfile
+import language_tool_python
+from docx import Document
 
-def main():
-    st.title("Corrección de documentos en español")
-    uploaded_file = st.file_uploader("Cargar documento TXT", type=['txt'], key='txt')
-    
-    if uploaded_file is not None:
-        text = uploaded_file.read().decode('utf-8')
+# Crear una instancia de LanguageTool para el idioma español
+tool = language_tool_python.LanguageTool('es')
 
-        nlp = spacy.load('es_core_news_sm')
-        corrected_text = correct_text(text, nlp)
+# Función para corregir el texto
+def corregir_texto(texto):
+    correcciones = tool.check(texto)
+    texto_corregido = language_tool_python.correct(texto, correcciones)
+    return texto_corregido
 
-        temp_file = save_tmp_document(corrected_text)
-        st.download_button("Descargar documento corregido", temp_file, 'documento_corregido.txt')
+# Configuración de la aplicación Streamlit
+st.title("Corrección Gramatical en Español")
+archivo_input = st.file_uploader("Cargar archivo .docx", type=['docx'])
 
-def correct_text(text, nlp):
-    doc = nlp(text)
-    corrected_text = ""
-    for sentence in doc.sents:
-        corrected_sentence = ""
-        for token in sentence:
-            # Realizar aquí la corrección de cada token utilizando Spacy
-            corrected_sentence += token.text_with_ws
-        corrected_text += corrected_sentence
-    return corrected_text
+if archivo_input is not None:
+    doc = Document(archivo_input)
+    texto = ' '.join([p.text for p in doc.paragraphs])
+    texto_corregido = corregir_texto(texto)
 
-def save_tmp_document(text):
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
-    temp_filename = temp_file.name
-    with open(temp_filename, "w", encoding="utf-8") as file:
-        file.write(text)
-    return temp_filename
+    st.text("Texto corregido:")
+    st.write(texto_corregido)
 
-if __name__ == "__main__":
-    main()
+    # Descargar el texto corregido en un nuevo archivo .docx
+    doc_corregido = Document()
+    doc_corregido.add_paragraph(texto_corregido)
+    st.download_button("Descargar texto corregido", data=doc_corregido.save, file_name="texto_corregido.docx")
