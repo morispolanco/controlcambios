@@ -20,7 +20,14 @@ def main():
         st.download_button("Descargar documento corregido", download_document(new_document), 'documento_corregido.docx')
 
 def correct_text(text, nlp):
-    # Realizar aquí la corrección del texto con Spacy
+    doc = nlp(text)
+    corrected_text = ""
+    for sentence in doc.sents:
+        corrected_sentence = ""
+        for token in sentence:
+            # Realizar aquí la corrección de cada token utilizando Spacy
+            corrected_sentence += token.text_with_ws
+        corrected_text += corrected_sentence
     return corrected_text
 
 def download_document(document):
