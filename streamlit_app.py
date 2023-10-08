@@ -30,7 +30,9 @@ def generate_comparison_document(document, document_es):
     comparison_doc = Document()
     comparison_doc.add_heading('Comparison between the original and translated documents', level=1)
     
-    for i in range(len(document.paragraphs)):
+    num_paragraphs = min(len(document.paragraphs), len(document_es.paragraphs))
+    
+    for i in range(num_paragraphs):
         p1 = document.paragraphs[i].text
         p2 = document_es.paragraphs[i].text
         
