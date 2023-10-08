@@ -1,40 +1,38 @@
 import streamlit as st
+import spacy
 from docx import Document
-import io
 
-def generate_comparison_doc(original_text, translated_text):
-    doc = Document()
-    doc.add_heading('Comparación entre el documento original y traducido', 0)
+def main():
+    st.title("Corrección de documentos Word en español")
+    uploaded_file = st.file_uploader("Cargar documento Word", type=['docx'], key='docx')
     
-    original_paragraphs = original_text.split('\n\n')
-    translated_paragraphs = translated_text.split('\n\n')
+    if uploaded_file is not None:
+        document = Document(uploaded_file)
+        text = ""
+        for paragraph in document.paragraphs:
+            text += paragraph.text
+
+        nlp = spacy.load('es_core_news_sm')
+        corrected_text = correct_text(text, nlp)
+
+        new_document = Document()
+        new_document.add_paragraph(corrected_text)
+        st.download_button("Descargar documento corregido", download_document(new_document), 'documento_corregido.docx')
+
+def correct_text(text, nlp):
+    # Realizar aquí la corrección del texto con Spacy
+    return corrected_text
+
+def download_document(document):
+    temp_doc = save_tmp_document(document)
     
-    for i in range(min(len(original_paragraphs), len(translated_paragraphs))):
-        doc.add_heading('Párrafo {}'.format(i+1), level=1)
-        doc.add_heading('Original:', level=2)
-        doc.add_paragraph(original_paragraphs[i])
-        doc.add_heading('Traducido:', level=2)
-        doc.add_paragraph(translated_paragraphs[i])
+    return temp_doc
+
+def save_tmp_document(document):
+    temp_doc = "temp_document.docx"
+    document.save(temp_doc)
     
-    return doc
+    return temp_doc
 
-st.title("Generador de documento de comparación con Streamlit")
-
-uploaded_file = st.file_uploader("Cargar documento DOCX", type="docx")
-
-if uploaded_file is not None:
-    document = Document(uploaded_file)
-    original_text = '\n\n'.join([paragraph.text for paragraph in document.paragraphs])
-    
-    st.header("Texto original")
-    st.write(original_text)
-    
-    st.header("Generar documento de comparación")
-    comparison_doc = generate_comparison_doc(original_text, original_text)
-
-    # Guardar el documento en un objeto de datos binarios
-    comparison_doc_data = io.BytesIO()
-    comparison_doc.save(comparison_doc_data)
-    comparison_doc_data.seek(0)
-
-    st.download_button("Descargar documento de comparación", data=comparison_doc_data, file_name="comparison_doc.docx")
+if __name__ == "__main__":
+    main()
