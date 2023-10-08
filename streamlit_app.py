@@ -1,29 +1,37 @@
 import streamlit as st
-import language_tool_python
-from docx import Document
+import requests
 
-# Crear una instancia de LanguageTool para el idioma español
-tool = language_tool_python.LanguageTool('es')
+# Configuración de las credenciales
+subscription_id = "bd43ff7a-c218-4228-8379-78333b20e73e"
+resource_group = "Texto"
+account_name = "Voa-a-texto-mp"
+endpoint = "https://eastus.api.cognitive.microsoft.com/sts/v1.0/issuetoken"
 
-# Función para corregir el texto
-def corregir_texto(texto):
-    correcciones = tool.check(texto)
-    texto_corregido = language_tool_python.correct(texto, correcciones)
-    return texto_corregido
+# Función para realizar la solicitud de transcripción
+def transcribir_audio(audio_file):
+    headers = {
+        "Ocp-Apim-Subscription-Key": subscription_id,
+        "Content-Type": "audio/wav"
+    }
+    response = requests.post(endpoint, headers=headers, data=audio_file)
+    if response.status_code == 200:
+        return response.text
+    else:
+        return None
 
 # Configuración de la aplicación Streamlit
-st.title("Corrección Gramatical en Español")
-archivo_input = st.file_uploader("Cargar archivo .docx", type=['docx'])
+st.title("Transcripción de Audio")
 
-if archivo_input is not None:
-    doc = Document(archivo_input)
-    texto = ' '.join([p.text for p in doc.paragraphs])
-    texto_corregido = corregir_texto(texto)
+# Cargar archivo de audio
+audio_file = st.file_uploader("Cargar archivo de audio", type=["wav"])
 
-    st.text("Texto corregido:")
-    st.write(texto_corregido)
+if audio_file is not None:
+    # Realizar la transcripción del audio
+    texto_transcrito = transcribir_audio(audio_file)
 
-    # Descargar el texto corregido en un nuevo archivo .docx
-    doc_corregido = Document()
-    doc_corregido.add_paragraph(texto_corregido)
-    st.download_button("Descargar texto corregido", data=doc_corregido.save, file_name="texto_corregido.docx")
+    if texto_transcrito is not None:
+        # Mostrar el texto transcrito
+        st.text("Texto transcrito:")
+        st.write(texto_transcrito)
+    else:
+        st.error("Error al realizar la transcripción del audio.")
