@@ -1,6 +1,7 @@
 import streamlit as st
 import spacy
 from docx import Document
+import tempfile
 
 def main():
     st.title("Corrección de documentos Word en español")
@@ -17,7 +18,8 @@ def main():
 
         new_document = Document()
         new_document.add_paragraph(corrected_text)
-        st.download_button("Descargar documento corregido", download_document(new_document), 'documento_corregido.docx')
+        temp_file = save_tmp_document(new_document)
+        st.download_button("Descargar documento corregido", temp_file, 'documento_corregido.docx')
 
 def correct_text(text, nlp):
     doc = nlp(text)
@@ -30,16 +32,11 @@ def correct_text(text, nlp):
         corrected_text += corrected_sentence
     return corrected_text
 
-def download_document(document):
-    temp_doc = save_tmp_document(document)
-    
-    return temp_doc
-
 def save_tmp_document(document):
-    temp_doc = "temp_document.docx"
-    document.save(temp_doc)
-    
-    return temp_doc
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_filename = temp_file.name
+    document.save(temp_filename)
+    return temp_filename
 
 if __name__ == "__main__":
     main()
