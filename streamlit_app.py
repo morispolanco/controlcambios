@@ -1,5 +1,7 @@
 import streamlit as st
 import requests
+from pydub import AudioSegment
+import io
 
 # Configuración de las credenciales
 subscription_id = "bd43ff7a-c218-4228-8379-78333b20e73e"
@@ -23,11 +25,17 @@ def transcribir_audio(audio_file):
 st.title("Transcripción de Audio")
 
 # Cargar archivo de audio
-audio_file = st.file_uploader("Cargar archivo de audio", type=["wav"])
+audio_file = st.file_uploader("Cargar archivo de audio", type=["m4a"])
 
 if audio_file is not None:
+    # Convertir archivo M4A a WAV
+    audio = AudioSegment.from_file(io.BytesIO(audio_file.read()), format="m4a")
+    wav_audio = io.BytesIO()
+    audio.export(wav_audio, format="wav")
+    wav_audio.seek(0)
+
     # Realizar la transcripción del audio
-    texto_transcrito = transcribir_audio(audio_file)
+    texto_transcrito = transcribir_audio(wav_audio)
 
     if texto_transcrito is not None:
         # Mostrar el texto transcrito
