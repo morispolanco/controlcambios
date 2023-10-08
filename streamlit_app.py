@@ -1,6 +1,5 @@
 import streamlit as st
 import spacy
-from docx import Document
 import tempfile
 
 def main():
@@ -8,18 +7,19 @@ def main():
     uploaded_file = st.file_uploader("Cargar documento Word", type=['docx'], key='docx')
     
     if uploaded_file is not None:
-        document = Document(uploaded_file)
-        text = ""
-        for paragraph in document.paragraphs:
-            text += paragraph.text
+        text = extract_text_from_docx(uploaded_file)
 
         nlp = spacy.load('es_core_news_sm')
         corrected_text = correct_text(text, nlp)
 
-        new_document = Document()
-        new_document.add_paragraph(corrected_text)
-        temp_file = save_tmp_document(new_document)
-        st.download_button("Descargar documento corregido", temp_file, 'documento_corregido.docx')
+        temp_file = save_tmp_document(corrected_text)
+        st.download_button("Descargar documento corregido", temp_file, 'documento_corregido.txt')
+
+def extract_text_from_docx(docx_file):
+    text = ""
+    for paragraph in docx_file.paragraphs:
+        text += paragraph.text + "\n"
+    return text
 
 def correct_text(text, nlp):
     doc = nlp(text)
@@ -32,10 +32,11 @@ def correct_text(text, nlp):
         corrected_text += corrected_sentence
     return corrected_text
 
-def save_tmp_document(document):
-    temp_dir = tempfile.TemporaryDirectory()
-    temp_filename = temp_dir.name + "/documento_corregido.docx"
-    document.save(temp_filename)
+def save_tmp_document(text):
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
+    temp_filename = temp_file.name
+    with open(temp_filename, "w", encoding="utf-8") as file:
+        file.write(text)
     return temp_filename
 
 if __name__ == "__main__":
