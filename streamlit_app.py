@@ -3,23 +3,17 @@ import spacy
 import tempfile
 
 def main():
-    st.title("Corrección de documentos Word en español")
-    uploaded_file = st.file_uploader("Cargar documento Word", type=['docx'], key='docx')
+    st.title("Corrección de documentos en español")
+    uploaded_file = st.file_uploader("Cargar documento TXT", type=['txt'], key='txt')
     
     if uploaded_file is not None:
-        text = extract_text_from_docx(uploaded_file)
+        text = uploaded_file.read().decode('utf-8')
 
         nlp = spacy.load('es_core_news_sm')
         corrected_text = correct_text(text, nlp)
 
         temp_file = save_tmp_document(corrected_text)
         st.download_button("Descargar documento corregido", temp_file, 'documento_corregido.txt')
-
-def extract_text_from_docx(docx_file):
-    text = ""
-    for paragraph in docx_file.paragraphs:
-        text += paragraph.text + "\n"
-    return text
 
 def correct_text(text, nlp):
     doc = nlp(text)
@@ -41,3 +35,4 @@ def save_tmp_document(text):
 
 if __name__ == "__main__":
     main()
+E
