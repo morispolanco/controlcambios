@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
-from pydub import AudioSegment
+import sounddevice as sd
+import soundfile as sf
 import io
 
 # Configuración de las credenciales
@@ -22,24 +23,35 @@ def transcribir_audio(audio_file):
         return None
 
 # Configuración de la aplicación Streamlit
-st.title("Transcripción de Audio")
+st.title("Transcripción de Audio en Tiempo Real")
 
-# Cargar archivo de audio
-audio_file = st.file_uploader("Cargar archivo de audio", type=["m4a"])
+# Inicializar variables
+recording = False
+audio_frames = []
 
-if audio_file is not None:
-    # Convertir archivo M4A a WAV
-    audio = AudioSegment.from_file(io.BytesIO(audio_file.read()), format="m4a")
-    wav_audio = io.BytesIO()
-    audio.export(wav_audio, format="wav")
-    wav_audio.seek(0)
-
-    # Realizar la transcripción del audio
-    texto_transcrito = transcribir_audio(wav_audio)
-
-    if texto_transcrito is not None:
-        # Mostrar el texto transcrito
-        st.text("Texto transcrito:")
-        st.write(texto_transcrito)
+# Botón para iniciar/detener la grabación
+if st.button("Iniciar/Detener Grabación"):
+    if not recording:
+        recording = True
+        st.write("Grabando...")
+        audio_frames = []
+        # Configurar la grabación de audio desde el micrófono
+        samplerate = 44100
+        duration = 10  # Duración de la grabación en segundos
+        audio = sd.rec(int(samplerate * duration), samplerate=samplerate, channels=1)
+        sd.wait()
+        # Guardar la grabación en un archivo WAV
+        wav_audio = io.BytesIO()
+        sf.write(wav_audio, audio, samplerate)
+        wav_audio.seek(0)
+        # Realizar la transcripción del audio
+        texto_transcrito = transcribir_audio(wav_audio)
+        if texto_transcrito is not None:
+            # Mostrar el texto transcrito
+            st.text("Texto transcrito:")
+            st.write(texto_transcrito)
+        else:
+            st.error("Error al realizar la transcripción del audio.")
     else:
-        st.error("Error al realizar la transcripción del audio.")
+        recording = False
+        st.write("Grabación detenida.")
