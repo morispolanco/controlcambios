@@ -1,58 +1,76 @@
 import streamlit as st
-import docx2txt
-import openai
+from docx import Document
+from googletrans import Translator
 
-# Título de la aplicación
-st.title("Corrector de Textos en Español con ChatGPT")
+def translate_to_english(document):
+    translator = Translator()
+    document_text = ""
+    for paragraph in document.paragraphs:
+        document_text += paragraph.text + "\n"
+    translated_text = translator.translate(document_text, src='es', dest='en').text
+    
+    document_en = Document()
+    document_en.add_paragraph(translated_text)
+    
+    return document_en
 
-# Cargar la clave de la API de OpenAI ingresada por el usuario
-api_key = st.text_input("Ingresar clave de API de OpenAI", type="password")
+def translate_to_spanish(document_en):
+    translator = Translator()
+    document_text_en = ""
+    for paragraph in document_en.paragraphs:
+        document_text_en += paragraph.text + "\n"
+    translated_text_es = translator.translate(document_text_en, src='en', dest='es').text
+    
+    document_es = Document()
+    document_es.add_paragraph(translated_text_es)
+    
+    return document_es
 
-# Cargar el documento .docx ingresado por el usuario
-uploaded_file = st.file_uploader("Cargar documento (.docx)", type="docx")
-
-# Botón para corregir el texto
-if st.button("Corregir"):
-    if api_key:
-        if uploaded_file is not None:
-            # Leer el contenido del documento .docx
-            document_text = docx2txt.process(uploaded_file)
-            
-            # Dividir el texto en chunks más pequeños
-            chunk_size = 500  # Tamaño del chunk en caracteres
-            chunks = [document_text[i:i+chunk_size] for i in range(0, len(document_text), chunk_size)]
-            
-            # Configurar la clave de la API de OpenAI
-            openai.api_key = api_key
-            
-            # Corregir cada chunk utilizando ChatGPT
-            corrected_chunks = []
-            for chunk in chunks:
-                # Llamar a la API de OpenAI para corregir el chunk
-                response = openai.Completion.create(
-                    engine="text-davinci-003",
-                    prompt=chunk,
-                    max_tokens=100,
-                    temperature=0.7,
-                    n=1,
-                    stop=None
-                )
-                
-                # Obtener la respuesta generada por ChatGPT
-                corrected_chunk = response.choices[0].text.strip()
-                corrected_chunks.append(corrected_chunk)
-            
-            # Unir los chunks corregidos en un solo texto
-            corrected_text = " ".join(corrected_chunks)
-            
-            # Guardar el texto corregido en un archivo de texto (.txt)
-            temp_file = "corregido.txt"
-            with open(temp_file, "w", encoding="utf-8") as file:
-                file.write(corrected_text)
-            
-            # Descargar el archivo de texto (.txt)
-            st.download_button("Descargar documento corregido", data=temp_file, file_name="corregido.txt")
+def generate_comparison_document(document, document_es):
+    comparison_doc = Document()
+    comparison_doc.add_heading('Comparison between the original and translated documents', level=1)
+    
+    for i in range(len(document.paragraphs)):
+        p1 = document.paragraphs[i].text
+        p2 = document_es.paragraphs[i].text
+        
+        if p1 != p2:
+            run = comparison_doc.add_paragraph().add_run(p1)
+            run.bold = True
+            run.underline = True
+            comparison_doc.add_paragraph(p2)
         else:
-            st.warning("Por favor, carga un documento antes de corregir.")
-    else:
-        st.warning("Por favor, ingresa tu clave de API de OpenAI antes de corregir.")
+            comparison_doc.add_paragraph(p1)
+    
+    return comparison_doc
+
+st.title("Document Translation App")
+
+uploaded_file = st.file_uploader("Upload a .docx file", type="docx")
+
+if uploaded_file is not None:
+    document = Document(uploaded_file)
+    
+    st.header("Original Document (Spanish)")
+    for paragraph in document.paragraphs:
+        st.write(paragraph.text)
+    
+    st.header("Translated Document (English)")
+    document_en = translate_to_english(document)
+    for paragraph in document_en.paragraphs:
+        st.write(paragraph.text)
+    
+    st.header("Translated Document (Back to Spanish)")
+    document_es = translate_to_spanish(document_en)
+    for paragraph in document_es.paragraphs:
+        st.write(paragraph.text)
+    
+    st.header("Comparison Document with Track Changes")
+    comparison_doc = generate_comparison_document(document, document_es)
+    comparison_doc.save("comparison_document.docx")
+    st.download_button(
+        label="Download Comparison Document",
+        data=comparison_doc.save,
+        file_name="comparison_document.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
