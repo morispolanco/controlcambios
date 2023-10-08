@@ -71,8 +71,8 @@ if uploaded_file is not None:
     comparison_doc = generate_comparison_document(document, document_es)
     comparison_doc.save("comparison_document.docx")
     st.download_button(
-        label="Download Comparison Document",
-        data=comparison_doc.save,
-        file_name="comparison_document.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
+    label="Download Comparison Document",
+    data=comparison_doc.save("comparison_document.docx").getvalue(),
+    file_name="comparison_document.docx",
+    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
