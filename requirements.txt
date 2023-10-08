@@ -1,4 +1,3 @@
 streamlit 
-python-docx 
-spacy
-es_core_news_sm
+language_tool_python 
+python-docx
