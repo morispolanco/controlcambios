@@ -1,11 +1,6 @@
 import streamlit as st
 from docx import Document
-from googletrans import Translator
-
-def translate_text(text, src_lang, dest_lang):
-    translator = Translator()
-    translation = translator.translate(text, src=src_lang, dest=dest_lang)
-    return translation.text
+import io
 
 def generate_comparison_doc(original_text, translated_text):
     doc = Document()
@@ -23,7 +18,7 @@ def generate_comparison_doc(original_text, translated_text):
     
     return doc
 
-st.title("Traductor de documentos con Streamlit")
+st.title("Generador de documento de comparación con Streamlit")
 
 uploaded_file = st.file_uploader("Cargar documento DOCX", type="docx")
 
@@ -31,17 +26,15 @@ if uploaded_file is not None:
     document = Document(uploaded_file)
     original_text = '\n\n'.join([paragraph.text for paragraph in document.paragraphs])
     
-    st.header("Texto original (español)")
+    st.header("Texto original")
     st.write(original_text)
     
-    st.header("Texto traducido al inglés")
-    translated_text = translate_text(original_text, 'es', 'en')
-    st.write(translated_text)
-    
-    st.header("Texto traducido de nuevo al español")
-    translated_back_text = translate_text(translated_text, 'en', 'es')
-    st.write(translated_back_text)
-    
-    st.header("Comparación entre el documento original y traducido")
-    comparison_doc = generate_comparison_doc(original_text, translated_back_text)
-    st.download_button("Descargar documento de comparación", data=comparison_doc.save, file_name="comparison_doc.docx")
+    st.header("Generar documento de comparación")
+    comparison_doc = generate_comparison_doc(original_text, original_text)
+
+    # Guardar el documento en un objeto de datos binarios
+    comparison_doc_data = io.BytesIO()
+    comparison_doc.save(comparison_doc_data)
+    comparison_doc_data.seek(0)
+
+    st.download_button("Descargar documento de comparación", data=comparison_doc_data, file_name="comparison_doc.docx")
