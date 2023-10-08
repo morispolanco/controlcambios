@@ -33,8 +33,8 @@ def correct_text(text, nlp):
     return corrected_text
 
 def save_tmp_document(document):
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_filename = temp_file.name
+    temp_dir = tempfile.TemporaryDirectory()
+    temp_filename = temp_dir.name + "/documento_corregido.docx"
     document.save(temp_filename)
     return temp_filename
 
