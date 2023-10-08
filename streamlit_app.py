@@ -35,4 +35,3 @@ def save_tmp_document(text):
 
 if __name__ == "__main__":
     main()
-E
